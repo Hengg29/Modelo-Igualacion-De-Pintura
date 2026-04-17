@@ -1,0 +1,10 @@
+{
+  "best_model": "SVM RBF",
+  "accuracy": 0.4033,
+  "n_classes": 174,
+  "features": [
+    "L",
+    "a",
+    "b"
+  ]
+}

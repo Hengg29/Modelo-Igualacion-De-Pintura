@@ -1,0 +1,42 @@
+{
+  "KNN (k=5)": {
+    "accuracy": 0.3391,
+    "top3_accuracy": 0.5975,
+    "f1_macro": 0.3289,
+    "mean_de_error": 8.6,
+    "train_time_s": 0.02,
+    "infer_ms": 0.004
+  },
+  "KNN (k=3)": {
+    "accuracy": 0.3117,
+    "top3_accuracy": 0.5387,
+    "f1_macro": 0.3026,
+    "mean_de_error": 8.78,
+    "train_time_s": 0.02,
+    "infer_ms": 0.003
+  },
+  "SVM RBF": {
+    "accuracy": 0.4033,
+    "top3_accuracy": 0.7261,
+    "f1_macro": 0.3915,
+    "mean_de_error": 8.08,
+    "train_time_s": 9.1,
+    "infer_ms": 6.884
+  },
+  "Random Forest": {
+    "accuracy": 0.3502,
+    "top3_accuracy": 0.6693,
+    "f1_macro": 0.3442,
+    "mean_de_error": 8.41,
+    "train_time_s": 4.18,
+    "infer_ms": 0.179
+  },
+  "Logistic Regression": {
+    "accuracy": 0.3864,
+    "top3_accuracy": 0.6985,
+    "f1_macro": 0.3655,
+    "mean_de_error": 8.39,
+    "train_time_s": 2.66,
+    "infer_ms": 0.0
+  }
+}
