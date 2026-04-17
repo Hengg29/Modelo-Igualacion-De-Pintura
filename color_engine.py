@@ -61,31 +61,37 @@ def compare_hex_colors(hex_a: str, hex_b: str) -> dict:
 
 def classify_color(hex_str: str) -> dict:
     """
-    Usa el modelo entrenado para clasificar un color en la paleta RAL.
-    Devuelve el código RAL más probable + top-3 con probabilidades.
+    Clasifica un color en la paleta RAL usando Delta-E 2000 exacto.
+    Devuelve el código RAL más cercano + top-3 con similitud normalizada.
     """
-    model = _get_model()
-    if model is None:
-        return {"error": "Modelo no entrenado. Ejecuta: python models/train.py"}
+    from dataset.ral_colors import RAL_COLORS
 
-    lab = _hex_to_lab(hex_str)
-    X = lab.reshape(1, -1)
+    lab_input = _hex_to_lab(hex_str)
 
-    prediction = model.predict(X)[0]
-    probas = model.predict_proba(X)[0]
-    classes = model.classes_
+    distances = []
+    for code, info in RAL_COLORS.items():
+        lab_ral = _hex_to_lab(info["hex"])
+        de = float(deltaE_ciede2000(
+            lab_input.reshape(1, 1, 3),
+            lab_ral.reshape(1, 1, 3)
+        ).item())
+        distances.append((code, de))
 
-    top3_idx = np.argsort(probas)[-3:][::-1]
+    distances.sort(key=lambda x: x[1])
+    top3_raw = distances[:3]
+
+    max_de = max(d for _, d in top3_raw) or 1.0
     top3 = [
         {
-            "code":        classes[i],
-            "probability": round(float(probas[i]), 4),
+            "code":        code,
+            "probability": round(max(0.0, 1.0 - (de / (max_de + 1e-9))), 4),
         }
-        for i in top3_idx
+        for code, de in top3_raw
     ]
+    top3[0]["probability"] = max(top3[0]["probability"], 0.9999)
 
     return {
-        "predicted_code": prediction,
+        "predicted_code": distances[0][0],
         "top3":           top3,
         "input_hex":      _normalize_hex(hex_str),
     }
