@@ -6,40 +6,42 @@
   <title>Paint Color Matcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #07070f;
-      --bg2:       #0e0e1a;
-      --glass:     rgba(255,255,255,0.04);
-      --glass-h:   rgba(255,255,255,0.07);
-      --border:    rgba(255,255,255,0.08);
-      --border-h:  rgba(255,255,255,0.16);
+      --bg:        #04040e;
+      --bg2:       #080815;
+      --glass:     rgba(255,255,255,0.03);
+      --glass-h:   rgba(255,255,255,0.06);
+      --border:    rgba(255,255,255,0.07);
+      --border-h:  rgba(255,255,255,0.18);
       --text:      #f0f0ff;
       --text-2:    #9898b8;
-      --text-3:    #55556a;
+      --text-3:    #4a4a6a;
       --accent-1:  #7c3aed;
       --accent-2:  #ec4899;
       --accent-3:  #f59e0b;
+      --cyan:†      #00d4ff;
       --success:   #34d399;
       --danger:    #f87171;
-      --warning:   #fbbf24;
       --mono:      'JetBrains Mono', monospace;
       --sans:      'Inter', -apple-system, sans-serif;
       --r-sm:      10px;
       --r-md:      16px;
-      --r-lg:      22px;
+      --r-lg:      24px;
+      --r-xl:      32px;
     }
 
-    /* ── background mesh ── */
+    /* ── scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,.4); border-radius: 99px; }
+
+    /* ── base ── */
     body {
       background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 70% 50% at 15% 40%, rgba(124,58,237,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 85% 15%, rgba(236,72,153,.12) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 60% at 55% 90%, rgba(245,158,11,.08) 0%, transparent 50%);
       color: var(--text);
       font-family: var(--sans);
       font-size: 15px;
@@ -48,79 +50,164 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 48px 16px 96px;
+      padding: 52px 16px 96px;
+      overflow-x: hidden;
+      position: relative;
     }
+
+    /* ── animated background ── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0;
+      animation: orbFloat linear infinite;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,.22) 0%, transparent 70%);
+      top: -15%; left: -10%;
+      animation-duration: 22s;
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(236,72,153,.18) 0%, transparent 70%);
+      top: 10%; right: -8%;
+      animation-duration: 28s;
+      animation-delay: -8s;
+    }
+    .orb-3 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,212,255,.12) 0%, transparent 70%);
+      bottom: 5%; left: 20%;
+      animation-duration: 35s;
+      animation-delay: -15s;
+    }
+    .orb-4 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(245,158,11,.1) 0%, transparent 70%);
+      bottom: 30%; right: 15%;
+      animation-duration: 20s;
+      animation-delay: -5s;
+    }
+
+    @keyframes orbFloat {
+      0%   { opacity: 0; transform: translate(0,0) scale(1); }
+      10%  { opacity: 1; }
+      50%  { transform: translate(40px, -60px) scale(1.1); }
+      90%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(-20px, 40px) scale(.95); }
+    }
+
+    /* grid overlay */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── everything above bg ── */
+    header, .card, .copy-toast { position: relative; z-index: 1; }
 
     /* ── header ── */
     header {
       text-align: center;
-      margin-bottom: 48px;
-      animation: fadeUp .6s ease both;
+      margin-bottom: 52px;
+      animation: fadeUp .7s ease both;
     }
 
     .logo-badge {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      background: var(--glass);
-      border: 1px solid var(--border);
+      background: rgba(124,58,237,.12);
+      border: 1px solid rgba(124,58,237,.3);
       border-radius: 99px;
-      padding: 5px 14px 5px 10px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: .07em;
-      color: var(--text-2);
+      padding: 5px 16px 5px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: #c4b5fd;
       text-transform: uppercase;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 24px rgba(124,58,237,.15);
     }
 
     .logo-badge .dot {
-      width: 8px; height: 8px;
+      width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--success);
-      box-shadow: 0 0 8px var(--success);
+      box-shadow: 0 0 10px var(--success), 0 0 20px var(--success);
       animation: pulse 2s ease infinite;
     }
 
     @keyframes pulse {
-      0%,100% { opacity: 1; box-shadow: 0 0 8px var(--success); }
-      50%      { opacity: .6; box-shadow: 0 0 16px var(--success); }
+      0%,100% { opacity: 1; box-shadow: 0 0 8px var(--success), 0 0 16px var(--success); }
+      50%      { opacity: .5; box-shadow: 0 0 4px var(--success); }
     }
 
     header h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -1.5px;
-      line-height: 1.1;
-      background: linear-gradient(135deg, #fff 0%, #c4b5fd 40%, #f9a8d4 75%, #fcd34d 100%);
+      font-size: clamp(2.2rem, 5.5vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      background: linear-gradient(135deg, #fff 0%, #e0d4ff 20%, #c4b5fd 40%, #f9a8d4 65%, #fcd34d 85%, #a5f3fc 100%);
+      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      animation: gradientShift 6s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     header p {
       color: var(--text-2);
       font-size: .9rem;
-      max-width: 420px;
+      max-width: 440px;
       margin: 0 auto;
+      line-height: 1.7;
     }
 
     /* ── main card ── */
     .card {
       width: 100%;
-      max-width: 940px;
-      background: var(--glass);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 28px;
-      animation: fadeUp .6s .1s ease both;
+      max-width: 960px;
+      background: rgba(255,255,255,.025);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      animation: fadeUp .7s .12s ease both;
+      box-shadow:
+        0 0 0 1px rgba(124,58,237,.05),
+        0 32px 64px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.06);
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(24px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -128,65 +215,85 @@
     .panels {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 20px;
     }
     @media (max-width: 640px) { .panels { grid-template-columns: 1fr; } }
 
     .panel {
-      background: var(--glass);
+      background: rgba(255,255,255,.025);
       border: 1px solid var(--border);
-      border-radius: var(--r-md);
-      padding: 20px;
+      border-radius: var(--r-lg);
+      padding: 22px;
       display: flex;
       flex-direction: column;
       gap: 16px;
-      transition: border-color .25s;
+      transition: border-color .3s, box-shadow .3s, transform .3s;
+      position: relative;
+      overflow: hidden;
     }
-    .panel:hover { border-color: var(--border-h); }
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(124,58,237,.04) 0%, transparent 60%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .panel:hover {
+      border-color: rgba(124,58,237,.35);
+      box-shadow: 0 0 32px rgba(124,58,237,.1), 0 8px 32px rgba(0,0,0,.3);
+      transform: translateY(-2px);
+    }
+    .panel:hover::before { opacity: 1; }
 
     .panel-tag {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: .68rem;
+      gap: 9px;
+      font-size: .67rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .1em;
+      letter-spacing: .12em;
       color: var(--text-3);
     }
 
     .panel-tag .tag-num {
-      width: 20px; height: 20px;
-      border-radius: 6px;
+      width: 22px; height: 22px;
+      border-radius: 7px;
       background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       color: #fff;
       font-size: .65rem;
-      font-weight: 700;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 0 12px rgba(124,58,237,.5);
     }
 
-    /* ── color picker ── */
+    /* ── color hero ── */
     .color-hero {
       border-radius: var(--r-md);
-      height: 96px;
+      height: 104px;
       position: relative;
       overflow: hidden;
-      transition: background .3s;
+      transition: background .25s, box-shadow .4s, transform .2s;
       cursor: pointer;
     }
+    .color-hero:hover { transform: scale(1.01); }
+    .color-hero:active { transform: scale(.99); }
 
     .color-hero::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,.35) 100%);
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,.4) 100%);
       transition: background .2s;
     }
 
     .color-hero:hover::after {
-      background: linear-gradient(to bottom, rgba(0,0,0,.1) 0%, rgba(0,0,0,.45) 100%);
+      background: linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,.5) 100%);
     }
 
     .color-hero-label {
@@ -195,13 +302,13 @@
       left: 14px;
       z-index: 2;
       font-family: var(--mono);
-      font-size: .85rem;
-      font-weight: 600;
-      color: rgba(255,255,255,.9);
-      text-shadow: 0 1px 4px rgba(0,0,0,.5);
+      font-size: .88rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 1px 6px rgba(0,0,0,.6);
+      letter-spacing: .05em;
     }
 
-    /* palette hint badge — top right of hero */
     .hero-palette-hint {
       position: absolute;
       top: 10px;
@@ -210,14 +317,14 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      background: rgba(0,0,0,.45);
+      background: rgba(0,0,0,.5);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.2);
       border-radius: 99px;
       padding: 4px 10px 4px 7px;
-      font-size: .7rem;
+      font-size: .68rem;
       font-weight: 600;
-      color: rgba(255,255,255,.85);
+      color: rgba(255,255,255,.9);
       letter-spacing: .04em;
       pointer-events: none;
       transition: opacity .2s;
@@ -234,10 +341,15 @@
       z-index: 4;
     }
 
-    /* palette open button (beside hex input) */
+    /* ── hex row ── */
+    .hex-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     .palette-btn {
-      width: 44px;
-      height: 44px;
+      width: 46px; height: 46px;
       border-radius: var(--r-sm);
       border: 1px solid var(--border);
       background: var(--glass);
@@ -245,7 +357,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color .2s, background .2s, transform .1s;
+      transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
       flex-shrink: 0;
       position: relative;
       overflow: hidden;
@@ -253,19 +365,18 @@
     .palette-btn:hover {
       border-color: var(--border-h);
       background: var(--glass-h);
+      transform: scale(1.06);
     }
     .palette-btn:active { transform: scale(.94); }
 
-    /* colored inner dot that mirrors picked color */
     .palette-btn .pb-dot {
-      width: 22px; height: 22px;
+      width: 24px; height: 24px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.25);
-      transition: background .3s;
+      border: 2px solid rgba(255,255,255,.3);
+      transition: background .25s, box-shadow .25s;
       pointer-events: none;
     }
 
-    /* hidden real color input inside the button */
     .palette-btn input[type="color"] {
       position: absolute;
       inset: 0;
@@ -275,25 +386,20 @@
       height: 100%;
     }
 
-    /* hex input */
-    .hex-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
     .hex-box {
       flex: 1;
       display: flex;
       align-items: center;
-      gap: 0;
-      background: rgba(0,0,0,.3);
+      background: rgba(0,0,0,.35);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       overflow: hidden;
-      transition: border-color .2s;
+      transition: border-color .2s, box-shadow .2s;
     }
-    .hex-box:focus-within { border-color: var(--accent-1); }
+    .hex-box:focus-within {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(124,58,237,.15);
+    }
 
     .hex-hash {
       padding: 0 10px;
@@ -311,15 +417,14 @@
       color: var(--text);
       font-family: var(--mono);
       font-size: .95rem;
-      font-weight: 600;
+      font-weight: 700;
       padding: 11px 12px 11px 0;
       text-transform: uppercase;
       min-width: 0;
     }
 
     .copy-btn {
-      width: 42px;
-      height: 42px;
+      width: 44px; height: 44px;
       background: transparent;
       border: none;
       border-left: 1px solid var(--border);
@@ -328,18 +433,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color .2s, background .2s;
+      transition: color .2s, background .2s, transform .15s;
       flex-shrink: 0;
     }
-    .copy-btn:hover { background: var(--glass-h); color: var(--text); }
+    .copy-btn:hover { background: var(--glass-h); color: var(--text); transform: scale(1.1); }
+    .copy-btn:active { transform: scale(.9); }
     .copy-btn svg { width: 15px; height: 15px; }
 
-    /* presets */
+    /* ── presets ── */
     .presets-label {
-      font-size: .7rem;
-      font-weight: 600;
+      font-size: .68rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .1em;
       color: var(--text-3);
       margin-bottom: 8px;
     }
@@ -347,44 +453,47 @@
     .presets-strip {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 7px;
     }
 
     .pdot {
-      width: 26px;
-      height: 26px;
+      width: 28px; height: 28px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: transform .15s, border-color .15s, box-shadow .15s;
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1), border-color .15s, box-shadow .2s;
       position: relative;
     }
-    .pdot:hover { transform: scale(1.25); }
+    .pdot:hover {
+      transform: scale(1.3) translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
+    }
     .pdot.active {
       border-color: #fff;
-      box-shadow: 0 0 0 2px rgba(255,255,255,.2);
-      transform: scale(1.15);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.15), 0 4px 12px rgba(0,0,0,.4);
+      transform: scale(1.2);
     }
 
-    /* ── image sampler ── */
+    /* ── drop zone ── */
     .drop-zone {
       border: 2px dashed var(--border);
       border-radius: var(--r-md);
-      min-height: 168px;
+      min-height: 174px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       cursor: pointer;
-      transition: border-color .25s, background .25s;
+      transition: border-color .25s, background .25s, transform .2s;
       position: relative;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
     }
     .drop-zone:hover, .drop-zone.drag-over {
       border-color: var(--accent-1);
-      background: rgba(124,58,237,.07);
+      background: rgba(124,58,237,.06);
+      transform: scale(1.01);
     }
     .drop-zone input[type="file"] {
       position: absolute;
@@ -396,20 +505,26 @@
     }
 
     .dz-icon-wrap {
-      width: 52px; height: 52px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(236,72,153,.25));
-      border: 1px solid rgba(124,58,237,.3);
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(124,58,237,.3), rgba(236,72,153,.25));
+      border: 1px solid rgba(124,58,237,.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
+      box-shadow: 0 0 24px rgba(124,58,237,.2);
+      transition: box-shadow .3s, transform .3s;
+    }
+    .drop-zone:hover .dz-icon-wrap {
+      box-shadow: 0 0 32px rgba(124,58,237,.4);
+      transform: scale(1.08) rotate(-4deg);
     }
 
-    .dz-title { font-size: .9rem; font-weight: 600; color: var(--text); }
+    .dz-title { font-size: .92rem; font-weight: 600; color: var(--text); }
     .dz-sub   { font-size: .75rem; color: var(--text-2); }
 
-    /* canvas */
+    /* ── canvas ── */
     .canvas-wrap {
       position: relative;
       border-radius: var(--r-md);
@@ -419,31 +534,31 @@
       display: none;
       touch-action: none;
       background: #000;
+      transition: box-shadow .3s;
     }
+    .canvas-wrap:hover { box-shadow: 0 0 20px rgba(124,58,237,.15); }
     .canvas-wrap canvas#main-canvas {
       display: block;
       width: 100%;
       height: auto;
-      max-height: 268px;
+      max-height: 272px;
       object-fit: contain;
     }
 
     /* magnifier */
     .magnifier {
       position: absolute;
-      width: 88px; height: 88px;
+      width: 92px; height: 92px;
       border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.85);
-      box-shadow: 0 8px 32px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.1);
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.08);
       pointer-events: none;
       display: none;
       overflow: hidden;
       z-index: 10;
-      backdrop-filter: none;
     }
     .magnifier canvas { position: absolute; top: 0; left: 0; image-rendering: pixelated; }
 
-    /* crosshair center dot */
     .mag-center {
       position: absolute;
       inset: 0;
@@ -456,12 +571,11 @@
     .mag-center::before, .mag-center::after {
       content: '';
       position: absolute;
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.9);
     }
     .mag-center::before { width: 1.5px; height: 100%; }
     .mag-center::after  { width: 100%; height: 1.5px; }
 
-    /* pin */
     .pin {
       position: absolute;
       width: 22px; height: 22px;
@@ -476,30 +590,30 @@
     .pin::after {
       content: '';
       position: absolute;
-      inset: -6px;
+      inset: -7px;
       border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,.25);
-      animation: pingRing 1.5s ease infinite;
+      border: 1.5px solid rgba(255,255,255,.3);
+      animation: pingRing 1.8s ease infinite;
     }
     @keyframes pingRing {
-      0%   { opacity: .7; transform: scale(.5); }
-      100% { opacity: 0;  transform: scale(2.2); }
+      0%   { opacity: .8; transform: scale(.4); }
+      100% { opacity: 0;  transform: scale(2.4); }
     }
 
     /* sampled row */
     .sampled-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 13px;
     }
 
     .sampled-blob {
-      width: 48px; height: 48px;
-      border-radius: 12px;
+      width: 52px; height: 52px;
+      border-radius: 14px;
       flex-shrink: 0;
       background: var(--glass);
       border: 1px solid var(--border);
-      transition: background .3s;
+      transition: background .25s, box-shadow .3s;
       box-shadow: 0 4px 16px rgba(0,0,0,.4);
     }
 
@@ -507,65 +621,90 @@
     .sampled-hex-val {
       font-family: var(--mono);
       font-size: .95rem;
-      font-weight: 600;
+      font-weight: 700;
     }
     .sampled-hint { font-size: .72rem; color: var(--text-3); }
 
     .change-btn {
-      padding: 7px 14px;
+      padding: 8px 16px;
       background: transparent;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 9px;
       color: var(--text-2);
       font-size: .75rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: border-color .2s, color .2s, background .2s;
+      transition: border-color .2s, color .2s, background .2s, transform .15s;
       white-space: nowrap;
     }
     .change-btn:hover {
       border-color: var(--accent-1);
       color: #c4b5fd;
-      background: rgba(124,58,237,.08);
+      background: rgba(124,58,237,.1);
+      transform: scale(1.04);
     }
+    .change-btn:active { transform: scale(.96); }
 
     /* ── compare button ── */
     .compare-btn {
       display: block;
       width: 100%;
-      margin-top: 20px;
-      padding: 15px;
+      margin-top: 22px;
+      padding: 16px;
       background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       color: #fff;
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 800;
       border: none;
       border-radius: var(--r-md);
       cursor: pointer;
-      transition: opacity .2s, transform .1s, box-shadow .2s;
-      letter-spacing: .02em;
-      box-shadow: 0 4px 24px rgba(124,58,237,.35);
+      transition: opacity .2s, transform .15s, box-shadow .3s;
+      letter-spacing: .04em;
+      box-shadow: 0 4px 24px rgba(124,58,237,.4), 0 0 0 1px rgba(255,255,255,.05);
       position: relative;
       overflow: hidden;
+      animation: btnPulse 3s ease infinite;
     }
+
+    @keyframes btnPulse {
+      0%,100% { box-shadow: 0 4px 24px rgba(124,58,237,.4), 0 0 0 1px rgba(255,255,255,.05); }
+      50%      { box-shadow: 0 4px 40px rgba(124,58,237,.65), 0 0 0 1px rgba(255,255,255,.08), 0 0 60px rgba(236,72,153,.2); }
+    }
+
+    /* shimmer sweep */
     .compare-btn::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, transparent, rgba(255,255,255,.1), transparent);
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
       transform: translateX(-100%);
-      transition: transform .5s ease;
+      transition: transform .6s ease;
     }
     .compare-btn:hover:not(:disabled)::before { transform: translateX(100%); }
     .compare-btn:hover:not(:disabled) {
-      box-shadow: 0 6px 32px rgba(124,58,237,.5);
-      opacity: .95;
+      box-shadow: 0 6px 40px rgba(124,58,237,.6), 0 0 60px rgba(236,72,153,.25);
+      transform: translateY(-2px);
+      animation: none;
     }
-    .compare-btn:active:not(:disabled) { transform: scale(.98); }
+    .compare-btn:active:not(:disabled) { transform: scale(.98) translateY(0); }
     .compare-btn:disabled {
-      opacity: .3;
+      opacity: .28;
       cursor: not-allowed;
       box-shadow: none;
+      animation: none;
+    }
+
+    /* ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.3);
+      transform: scale(0);
+      animation: rippleAnim .6s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
     }
 
     .spinner {
@@ -581,21 +720,29 @@
     .compare-btn.loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 2px 0 14px;
+    }
+
     /* ── results ── */
-    .results { display: none; margin-top: 24px; }
+    .results { display: none; margin-top: 28px; }
     .results.visible {
       display: block;
-      animation: fadeUp .4s ease both;
+      animation: fadeUp .5s ease both;
     }
 
     /* color bridge */
     .color-bridge {
       border-radius: var(--r-md);
-      height: 68px;
-      margin-bottom: 18px;
+      height: 72px;
+      margin-bottom: 20px;
       position: relative;
       overflow: hidden;
       border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0,0,0,.3);
     }
     .color-bridge-gradient { width: 100%; height: 100%; }
 
@@ -611,43 +758,50 @@
     .bridge-tag {
       font-family: var(--mono);
       font-size: .78rem;
-      font-weight: 600;
-      color: rgba(255,255,255,.9);
-      text-shadow: 0 1px 4px rgba(0,0,0,.6);
-      background: rgba(0,0,0,.3);
+      font-weight: 700;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 1px 4px rgba(0,0,0,.7);
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
       padding: 3px 10px;
-      border-radius: 6px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.12);
     }
 
     /* score row */
     .score-row {
       display: flex;
-      gap: 14px;
+      gap: 16px;
       align-items: stretch;
       flex-wrap: wrap;
     }
 
     /* gauge */
     .gauge-card {
-      background: var(--glass);
+      background: rgba(255,255,255,.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
-      padding: 20px;
+      padding: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       gap: 0;
-      min-width: 140px;
+      min-width: 148px;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .gauge-card:hover {
+      border-color: rgba(124,58,237,.3);
+      box-shadow: 0 0 24px rgba(124,58,237,.1);
     }
 
     .gauge-ring-wrap {
       position: relative;
-      width: 120px; height: 120px;
+      width: 124px; height: 124px;
     }
     .gauge-ring-wrap svg {
       transform: rotate(-90deg);
-      filter: drop-shadow(0 0 12px rgba(124,58,237,.4));
+      filter: drop-shadow(0 0 16px rgba(124,58,237,.5));
     }
     .gauge-center {
       position: absolute;
@@ -658,17 +812,21 @@
       justify-content: center;
     }
     .gauge-pct {
-      font-size: 1.6rem;
-      font-weight: 800;
+      font-size: 1.7rem;
+      font-weight: 900;
       line-height: 1;
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #c4b5fd, #f9a8d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .gauge-sub {
-      font-size: .6rem;
+      font-size: .58rem;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-top: 2px;
+      letter-spacing: .1em;
+      margin-top: 3px;
     }
 
     /* metric cards */
@@ -676,131 +834,171 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       min-width: 200px;
     }
 
     .metric-card {
-      background: var(--glass);
+      background: rgba(255,255,255,.025);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      padding: 14px 16px;
+      padding: 16px 18px;
       flex: 1;
+      transition: border-color .3s, transform .2s;
+    }
+    .metric-card:hover {
+      border-color: rgba(124,58,237,.25);
+      transform: translateX(3px);
     }
 
     .metric-label {
-      font-size: .65rem;
+      font-size: .63rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .1em;
+      letter-spacing: .12em;
       color: var(--text-3);
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .metric-val {
       font-family: var(--mono);
-      font-size: 1.4rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 800;
       line-height: 1;
     }
-
-    .metric-de { color: #c4b5fd; }
-
-    .interp-card {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 14px 16px;
+    .metric-de {
+      background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
+    .interp-card {
+      background: rgba(255,255,255,.025);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 16px 18px;
+      transition: border-color .3s;
+    }
+    .interp-card:hover { border-color: rgba(236,72,153,.25); }
     .interp-text {
       font-size: .88rem;
-      line-height: 1.55;
+      line-height: 1.6;
+      color: var(--text-2);
     }
 
     /* swatches */
     .swatch-compare {
       display: flex;
-      gap: 12px;
-      margin-top: 14px;
+      gap: 14px;
+      margin-top: 16px;
       justify-content: center;
       flex-wrap: wrap;
     }
 
     .sc-block {
       flex: 1;
-      min-width: 100px;
-      max-width: 180px;
-      background: var(--glass);
+      min-width: 110px;
+      max-width: 190px;
+      background: rgba(255,255,255,.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
       overflow: hidden;
+      transition: transform .2s, box-shadow .3s;
+    }
+    .sc-block:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
     }
     .sc-color {
-      height: 72px;
+      height: 76px;
       transition: background .4s;
     }
-    .sc-info {
-      padding: 10px 12px;
-    }
+    .sc-info { padding: 11px 13px; }
     .sc-label {
-      font-size: .65rem;
+      font-size: .63rem;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .1em;
       color: var(--text-3);
-      font-weight: 600;
+      font-weight: 700;
     }
     .sc-hex {
       font-family: var(--mono);
       font-size: .9rem;
-      font-weight: 600;
-      margin-top: 1px;
+      font-weight: 700;
+      margin-top: 2px;
     }
 
     .vs-badge {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px; height: 32px;
-      background: var(--glass);
+      width: 34px; height: 34px;
+      background: rgba(255,255,255,.04);
       border: 1px solid var(--border);
       border-radius: 50%;
       align-self: center;
       color: var(--text-3);
-      font-size: .75rem;
-      font-weight: 700;
+      font-size: .72rem;
+      font-weight: 800;
       flex-shrink: 0;
+      letter-spacing: .05em;
     }
 
-    /* ── RAL classification cards ── */
+    /* ── RAL section ── */
     .ral-section {
-      margin-top: 16px;
+      margin-top: 18px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 14px;
     }
     @media (max-width: 560px) { .ral-section { grid-template-columns: 1fr; } }
 
     .ral-card {
-      background: var(--glass);
+      background: rgba(255,255,255,.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
       overflow: hidden;
+      transition: border-color .3s, transform .25s, box-shadow .3s;
+      animation: slideUp .5s ease both;
+    }
+    .ral-card:hover {
+      border-color: rgba(124,58,237,.3);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.08);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .ral-card-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 14px 10px;
+      gap: 11px;
+      padding: 13px 15px 11px;
       border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .ral-card-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(124,58,237,.06) 0%, transparent 100%);
+      pointer-events: none;
     }
 
     .ral-color-dot {
-      width: 32px; height: 32px;
-      border-radius: 8px;
+      width: 36px; height: 36px;
+      border-radius: 10px;
       flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 0 12px rgba(0,0,0,.4);
+      transition: box-shadow .3s, transform .2s;
+    }
+    .ral-card:hover .ral-color-dot {
+      transform: scale(1.08);
     }
 
     .ral-header-info { flex: 1; min-width: 0; }
@@ -808,8 +1006,9 @@
     .ral-code {
       font-family: var(--mono);
       font-size: .82rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #c4b5fd;
+      letter-spacing: .03em;
     }
 
     .ral-name {
@@ -818,133 +1017,177 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-top: 1px;
     }
 
     .ral-badge {
-      font-size: .65rem;
-      font-weight: 700;
+      font-size: .62rem;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: .07em;
-      color: var(--text-3);
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 8px;
+      letter-spacing: .08em;
+      color: #a78bfa;
+      background: rgba(124,58,237,.15);
+      border: 1px solid rgba(124,58,237,.25);
+      border-radius: 7px;
+      padding: 3px 9px;
       white-space: nowrap;
     }
 
-    .ral-top3 { padding: 8px 14px 12px; }
+    .ral-top3 { padding: 10px 15px 14px; }
 
     .ral-top3-label {
-      font-size: .62rem;
+      font-size: .6rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .09em;
+      letter-spacing: .1em;
       color: var(--text-3);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .ral-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
+      gap: 9px;
+      margin-bottom: 8px;
+      animation: fadeIn .4s ease both;
+    }
+    .ral-row:nth-child(2) { animation-delay: .05s; }
+    .ral-row:nth-child(3) { animation-delay: .1s; }
+    .ral-row:nth-child(4) { animation-delay: .15s; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
     .ral-row-dot {
-      width: 18px; height: 18px;
-      border-radius: 5px;
+      width: 20px; height: 20px;
+      border-radius: 6px;
       flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.12);
+      transition: transform .2s;
     }
+    .ral-row:hover .ral-row-dot { transform: scale(1.15); }
 
     .ral-row-code {
-      font-family: var(--mono);
-      font-size: .75rem;
-      color: var(--text-2);
-      width: 90px;
+      width: 94px;
       flex-shrink: 0;
+    }
+    .ral-row-code .rc-num {
+      font-family: var(--mono);
+      font-size: .73rem;
+      font-weight: 700;
+      color: var(--text-2);
+      line-height: 1.2;
+    }
+    .ral-row-code .rc-name {
+      font-size: .6rem;
+      color: var(--text-3);
+      font-family: var(--sans);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 88px;
+      line-height: 1.3;
     }
 
     .ral-bar-wrap {
       flex: 1;
       height: 5px;
-      background: rgba(255,255,255,.07);
+      background: rgba(255,255,255,.06);
       border-radius: 99px;
       overflow: hidden;
+      position: relative;
     }
 
     .ral-bar {
       height: 100%;
       border-radius: 99px;
       background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-      transition: width .6s cubic-bezier(.4,0,.2,1);
+      transition: width .7s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .ral-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+      animation: shimmer 2s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
     }
 
     .ral-prob {
       font-family: var(--mono);
-      font-size: .7rem;
-      color: var(--text-3);
-      width: 36px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: #a78bfa;
+      width: 38px;
       text-align: right;
       flex-shrink: 0;
     }
 
     .ral-section-title {
-      font-size: .68rem;
+      font-size: .67rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .1em;
+      letter-spacing: .12em;
       color: var(--text-3);
-      margin: 18px 0 8px;
+      margin: 20px 0 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+    }
+    .ral-section-title::before {
+      content: '';
+      width: 3px; height: 12px;
+      background: linear-gradient(to bottom, var(--accent-1), var(--accent-2));
+      border-radius: 99px;
+      box-shadow: 0 0 8px rgba(124,58,237,.6);
     }
     .ral-section-title::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--border);
+      background: linear-gradient(90deg, var(--border), transparent);
     }
 
-    /* error */
+    /* ── error ── */
     .error-box {
       margin-top: 16px;
       padding: 13px 16px;
-      background: rgba(248,113,113,.08);
+      background: rgba(248,113,113,.07);
       border: 1px solid rgba(248,113,113,.25);
       border-radius: var(--r-sm);
       color: var(--danger);
       font-size: .875rem;
       display: none;
     }
-    .error-box.visible { display: block; }
+    .error-box.visible { display: block; animation: fadeUp .3s ease both; }
 
-    /* divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 4px 0 16px;
-    }
-
-    /* tooltip-ish copy feedback */
+    /* ── copy toast ── */
     .copy-toast {
       position: fixed;
-      bottom: 32px;
+      bottom: 36px;
       left: 50%;
-      transform: translateX(-50%) translateY(12px);
-      background: rgba(30,30,50,.95);
-      border: 1px solid var(--border-h);
-      border-radius: 8px;
-      padding: 8px 18px;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(20,20,40,.97);
+      border: 1px solid rgba(124,58,237,.35);
+      border-radius: 10px;
+      padding: 9px 20px;
       font-size: .82rem;
-      color: var(--text);
+      font-weight: 600;
+      color: #c4b5fd;
       pointer-events: none;
       opacity: 0;
-      transition: opacity .2s, transform .2s;
+      transition: opacity .25s, transform .25s;
       z-index: 100;
       white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 20px rgba(124,58,237,.2);
     }
     .copy-toast.show {
       opacity: 1;
@@ -953,6 +1196,15 @@
   </style>
 </head>
 <body>
+
+<!-- animated background -->
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+<div class="bg-grid"></div>
 
 <header>
   <div class="logo-badge">
@@ -973,8 +1225,7 @@
         Color de referencia
       </div>
 
-      <!-- big color hero -->
-      <div class="color-hero" id="color-hero" style="background:#7c3aed">
+      <div class="color-hero" id="color-hero" style="background:#7c3aed;box-shadow:0 0 40px rgba(124,58,237,.5)">
         <div class="color-hero-label" id="hero-label">#7C3AED</div>
         <div class="hero-palette-hint">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -986,11 +1237,9 @@
         <input type="color" id="color-wheel" value="#7c3aed" title="Abrir paleta de color" />
       </div>
 
-      <!-- hex input row -->
       <div class="hex-row">
-        <!-- palette button -->
         <button class="palette-btn" id="palette-btn" title="Abrir paleta de color">
-          <div class="pb-dot" id="pb-dot" style="background:#7c3aed"></div>
+          <div class="pb-dot" id="pb-dot" style="background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.7)"></div>
           <input type="color" id="color-wheel-2" value="#7c3aed" tabindex="-1" />
         </button>
 
@@ -1007,7 +1256,6 @@
 
       <div class="divider"></div>
 
-      <!-- presets -->
       <div>
         <div class="presets-label">Colores rápidos</div>
         <div class="presets-strip" id="presets-strip"></div>
@@ -1021,7 +1269,6 @@
         Muestra de imagen
       </div>
 
-      <!-- drop zone -->
       <div class="drop-zone" id="drop-zone">
         <div class="dz-icon-wrap">🖼</div>
         <div class="dz-title">Arrastra o selecciona una imagen</div>
@@ -1029,17 +1276,15 @@
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" />
       </div>
 
-      <!-- canvas -->
       <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="main-canvas"></canvas>
         <div class="magnifier" id="magnifier">
-          <canvas id="mag-canvas" width="176" height="176"></canvas>
+          <canvas id="mag-canvas" width="184" height="184"></canvas>
           <div class="mag-center"></div>
         </div>
         <div class="pin" id="pin"></div>
       </div>
 
-      <!-- sampled color -->
       <div class="sampled-row" id="sampled-row" style="display:none">
         <div class="sampled-blob" id="sampled-blob"></div>
         <div class="sampled-info">
@@ -1053,7 +1298,7 @@
 
   <!-- compare button -->
   <button class="compare-btn" id="compare-btn" disabled>
-    <span class="btn-text">Comparar colores</span>
+    <span class="btn-text">✦ Comparar colores</span>
     <span class="spinner"></span>
   </button>
 
@@ -1062,7 +1307,6 @@
   <!-- ── Results ── -->
   <div class="results" id="results">
 
-    <!-- color gradient bridge -->
     <div class="color-bridge" id="color-bridge">
       <canvas class="color-bridge-gradient" id="bridge-canvas"></canvas>
       <div class="bridge-labels">
@@ -1071,17 +1315,16 @@
       </div>
     </div>
 
-    <!-- gauge + metrics -->
     <div class="score-row">
       <div class="gauge-card">
         <div class="gauge-ring-wrap">
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="10"/>
+          <svg width="124" height="124" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="10"/>
             <circle id="gauge-track" cx="60" cy="60" r="50" fill="none"
               stroke="url(#gaugeGrad)" stroke-width="10"
               stroke-linecap="round"
               stroke-dasharray="314" stroke-dashoffset="314"
-              style="transition: stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)"/>
+              style="transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)"/>
             <defs>
               <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%"   stop-color="#7c3aed"/>
@@ -1109,7 +1352,6 @@
       </div>
     </div>
 
-    <!-- swatch compare -->
     <div class="swatch-compare">
       <div class="sc-block">
         <div class="sc-color" id="sc-color-a"></div>
@@ -1128,8 +1370,7 @@
       </div>
     </div>
 
-    <!-- RAL ML classification -->
-    <div class="ral-section-title">Clasificación ML — Paleta RAL más cercana</div>
+    <div class="ral-section-title">Clasificación RAL más cercana</div>
     <div class="ral-section" id="ral-section" style="display:none">
       <div class="ral-card" id="ral-card-a"></div>
       <div class="ral-card" id="ral-card-b"></div>
@@ -1137,7 +1378,6 @@
   </div>
 </div>
 
-<!-- copy toast -->
 <div class="copy-toast" id="copy-toast">¡Copiado al portapapeles!</div>
 
 <script>
@@ -1150,16 +1390,17 @@ const PRESETS = [
 ];
 
 const strip = document.getElementById("presets-strip");
-PRESETS.forEach(hex => {
+PRESETS.forEach((hex, i) => {
   const d = document.createElement("div");
   d.className = "pdot";
   d.style.background = hex;
   d.title = hex;
+  d.style.animationDelay = (i * 30) + "ms";
   d.addEventListener("click", () => applyColor(hex));
   strip.appendChild(d);
 });
 
-// ── color picker logic ───────────────────────────────────────────
+// ── color picker ─────────────────────────────────────────────────
 const colorWheel  = document.getElementById("color-wheel");
 const colorWheel2 = document.getElementById("color-wheel-2");
 const hexField    = document.getElementById("hex-field");
@@ -1169,7 +1410,6 @@ const pbDot       = document.getElementById("pb-dot");
 
 let pickedColor = "#7C3AED";
 
-// both color inputs sync together
 [colorWheel, colorWheel2].forEach(cw => {
   cw.addEventListener("input", () => {
     hexField.value = cw.value.slice(1).toUpperCase();
@@ -1191,13 +1431,25 @@ document.getElementById("copy-btn").addEventListener("click", () => {
   navigator.clipboard?.writeText(pickedColor).then(() => showToast("¡Copiado al portapapeles!"));
 });
 
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
+  return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+}
+
 function applyColor(hex, updateWheels = true) {
   const h = normalizeHex(hex);
   if (!h) return;
   pickedColor = h;
   colorHero.style.background = h;
   heroLabel.textContent = h;
+
+  // dynamic glow matching the color
+  const { r, g, b } = hexToRgb(h);
+  const glow = `0 0 48px rgba(${r},${g},${b},.55), 0 0 16px rgba(${r},${g},${b},.3)`;
+  colorHero.style.boxShadow = glow;
   pbDot.style.background = h;
+  pbDot.style.boxShadow = `0 0 10px rgba(${r},${g},${b},.8)`;
+
   if (updateWheels) {
     colorWheel.value  = h.toLowerCase();
     colorWheel2.value = h.toLowerCase();
@@ -1216,6 +1468,18 @@ function normalizeHex(s) {
   return /^[0-9a-fA-F]{6}$/.test(s) ? "#" + s.toUpperCase() : null;
 }
 
+// ── ripple on compare button ─────────────────────────────────────
+document.getElementById("compare-btn").addEventListener("click", function(e) {
+  const btn = this;
+  const r = document.createElement("span");
+  r.className = "ripple";
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 620);
+}, true);
+
 // ── image / canvas ───────────────────────────────────────────────
 const dropZone   = document.getElementById("drop-zone");
 const fileInput  = document.getElementById("file-input");
@@ -1227,9 +1491,9 @@ const magCanvas  = document.getElementById("mag-canvas");
 const magCtx     = magCanvas.getContext("2d");
 const pin        = document.getElementById("pin");
 const sampledRow = document.getElementById("sampled-row");
-const sampledBlob = document.getElementById("sampled-blob");
-const sampledHexVal = document.getElementById("sampled-hex-val");
-const sampledHint   = document.getElementById("sampled-hint");
+const sampledBlob    = document.getElementById("sampled-blob");
+const sampledHexVal  = document.getElementById("sampled-hex-val");
+const sampledHint    = document.getElementById("sampled-hint");
 
 let imgObj = null;
 let sampledColor = null;
@@ -1257,6 +1521,7 @@ function loadFile(file) {
     sampledColor = null;
     pin.style.display = "none";
     sampledBlob.style.background = "var(--glass)";
+    sampledBlob.style.boxShadow  = "none";
     sampledHexVal.textContent = "—";
     sampledHint.textContent = "Toca / haz clic en la imagen para medir el color";
     checkReady();
@@ -1273,12 +1538,10 @@ document.getElementById("change-btn").addEventListener("click", () => {
   checkReady();
 });
 
-// mouse
 canvasWrap.addEventListener("mousemove", e => showMag(canvasPos(e), e.clientX, e.clientY));
 canvasWrap.addEventListener("mouseleave", () => { magnifier.style.display = "none"; });
 canvasWrap.addEventListener("click", e => { pickColor(canvasPos(e)); magnifier.style.display = "none"; });
 
-// touch
 canvasWrap.addEventListener("touchstart", e => {
   e.preventDefault();
   const t = e.touches[0];
@@ -1309,14 +1572,14 @@ function canvasPos(ev) {
 
 function showMag(pos, cx, cy) {
   if (!imgObj) return;
-  const SIDE = 176, SRC = 22; // 8x zoom
+  const SIDE = 184, SRC = 23;
   const sx = Math.max(0, Math.min(pos.x - SRC/2, mainCanvas.width  - SRC));
   const sy = Math.max(0, Math.min(pos.y - SRC/2, mainCanvas.height - SRC));
   magCtx.clearRect(0, 0, SIDE, SIDE);
   magCtx.imageSmoothingEnabled = false;
   magCtx.drawImage(mainCanvas, sx, sy, SRC, SRC, 0, 0, SIDE, SIDE);
 
-  const MAG = 88, wr = canvasWrap.getBoundingClientRect();
+  const MAG = 92, wr = canvasWrap.getBoundingClientRect();
   let left = cx - wr.left + 18;
   let top  = cy - wr.top  - MAG - 18;
   if (left + MAG > wr.width)  left = cx - wr.left - MAG - 18;
@@ -1336,12 +1599,14 @@ function pickColor(pos) {
 
   sampledColor = hex;
   sampledBlob.style.background = hex;
+  const { r, g, b } = hexToRgb(hex);
+  sampledBlob.style.boxShadow = `0 0 20px rgba(${r},${g},${b},.5)`;
   sampledHexVal.textContent = hex;
   sampledHint.textContent = "Color muestreado — toca de nuevo para cambiar";
 
-  const r = mainCanvas.getBoundingClientRect();
-  const px2 = pos.x * r.width  / mainCanvas.width;
-  const py2 = pos.y * r.height / mainCanvas.height;
+  const rect = mainCanvas.getBoundingClientRect();
+  const px2 = pos.x * rect.width  / mainCanvas.width;
+  const py2 = pos.y * rect.height / mainCanvas.height;
   pin.style.left       = px2 + "px";
   pin.style.top        = py2 + "px";
   pin.style.background = hex;
@@ -1355,9 +1620,10 @@ function checkReady() {
   document.getElementById("compare-btn").disabled = !(pickedColor && sampledColor);
 }
 
-document.getElementById("compare-btn").addEventListener("click", async () => {
+document.getElementById("compare-btn").addEventListener("click", async function(e) {
   const btn = document.getElementById("compare-btn");
-  const errBox = document.getElementById("error-box");
+  if (btn.disabled) return;
+  const errBox  = document.getElementById("error-box");
   const results = document.getElementById("results");
 
   btn.classList.add("loading"); btn.disabled = true;
@@ -1373,7 +1639,7 @@ document.getElementById("compare-btn").addEventListener("click", async () => {
     if (!res.ok) throw new Error(data.detail || "Error desconocido");
     renderResults(data);
     results.classList.add("visible");
-    setTimeout(() => results.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    setTimeout(() => results.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
   } catch (err) {
     errBox.textContent = "⚠ " + err.message;
     errBox.classList.add("visible");
@@ -1383,34 +1649,29 @@ document.getElementById("compare-btn").addEventListener("click", async () => {
 });
 
 // ── render results ───────────────────────────────────────────────
-const CIRC = 2 * Math.PI * 50; // r=50 → ≈314
+const CIRC = 2 * Math.PI * 50;
 
-// RAL color name lookup
 const RAL_NAMES = {"RAL 1000":"Beige verde","RAL 1001":"Beige","RAL 1002":"Amarillo arena","RAL 1003":"Amarillo señal","RAL 1004":"Amarillo dorado","RAL 1005":"Amarillo miel","RAL 1006":"Amarillo maíz","RAL 1007":"Amarillo narciso","RAL 1011":"Marrón beige","RAL 1012":"Amarillo limón","RAL 1013":"Blanco perla","RAL 1014":"Marfil","RAL 1015":"Marfil claro","RAL 1016":"Amarillo azufre","RAL 1017":"Amarillo azafrán","RAL 1018":"Amarillo zinc","RAL 1019":"Gris beige","RAL 1020":"Amarillo oliva","RAL 1021":"Amarillo colza","RAL 1023":"Amarillo tráfico","RAL 1024":"Amarillo ocre","RAL 1027":"Amarillo curry","RAL 1028":"Amarillo melón","RAL 1032":"Amarillo retama","RAL 1033":"Amarillo dalia","RAL 1034":"Amarillo pastel","RAL 1037":"Amarillo sol","RAL 2000":"Naranja amarillento","RAL 2001":"Naranja rojizo","RAL 2002":"Naranja bermejo","RAL 2003":"Naranja pastel","RAL 2004":"Naranja puro","RAL 2008":"Naranja salmón","RAL 2009":"Naranja tráfico","RAL 2010":"Naranja señal","RAL 2011":"Naranja profundo","RAL 2012":"Naranja salmón","RAL 3000":"Rojo llama","RAL 3001":"Rojo señal","RAL 3002":"Rojo carmín","RAL 3003":"Rojo rubí","RAL 3004":"Rojo púrpura","RAL 3005":"Rojo vino","RAL 3007":"Rojo negro","RAL 3009":"Rojo óxido","RAL 3011":"Rojo marrón","RAL 3012":"Rojo beige","RAL 3013":"Rojo tomate","RAL 3014":"Rojo antiguo","RAL 3015":"Rosa claro","RAL 3016":"Rojo coral","RAL 3017":"Rosa","RAL 3018":"Rojo fresa","RAL 3020":"Rojo tráfico","RAL 3022":"Rojo salmón","RAL 3027":"Rojo frambuesa","RAL 3028":"Rojo puro","RAL 3031":"Rojo oriente","RAL 4001":"Lila rojizo","RAL 4002":"Violeta rojizo","RAL 4003":"Violeta erica","RAL 4004":"Violeta burdeos","RAL 4005":"Lila azulado","RAL 4006":"Violeta tráfico","RAL 4007":"Violeta púrpura","RAL 4008":"Violeta señal","RAL 4009":"Violeta pastel","RAL 4010":"Violeta telekom","RAL 5000":"Azul violeta","RAL 5001":"Azul verde","RAL 5002":"Azul ultramar","RAL 5003":"Azul zafiro","RAL 5005":"Azul señal","RAL 5007":"Azul brillante","RAL 5009":"Azul Pacífico","RAL 5010":"Azul genciana","RAL 5012":"Azul claro","RAL 5013":"Azul cobalto","RAL 5014":"Azul paloma","RAL 5015":"Azul celeste","RAL 5017":"Azul tráfico","RAL 5018":"Azul turquesa","RAL 5019":"Azul capri","RAL 5020":"Azul oceáno","RAL 5021":"Azul agua","RAL 5022":"Azul noche","RAL 5023":"Azul lejano","RAL 5024":"Azul Pastel","RAL 6000":"Pátina verde","RAL 6001":"Verde esmeralda","RAL 6002":"Verde follaje","RAL 6003":"Verde oliva","RAL 6005":"Verde musgo","RAL 6007":"Verde botella","RAL 6009":"Verde abeto","RAL 6010":"Verde hierba","RAL 6011":"Verde reseda","RAL 6013":"Verde caña","RAL 6016":"Verde turquesa","RAL 6017":"Verde mayo","RAL 6018":"Verde amarillo","RAL 6019":"Verde blanco","RAL 6021":"Verde pálido","RAL 6024":"Verde tráfico","RAL 6025":"Verde helecho","RAL 6027":"Verde claro","RAL 6029":"Verde menta","RAL 6032":"Verde señal","RAL 6033":"Verde turquesa menta","RAL 6034":"Verde turquesa pastel","RAL 6037":"Verde puro","RAL 7000":"Gris ardilla","RAL 7001":"Gris plata","RAL 7002":"Gris oliva","RAL 7003":"Gris musgo","RAL 7004":"Gris señal","RAL 7005":"Gris ratón","RAL 7006":"Gris beige","RAL 7009":"Gris verde","RAL 7011":"Gris hierro","RAL 7012":"Gris basalto","RAL 7015":"Gris pizarra","RAL 7016":"Gris antracita","RAL 7021":"Gris negro","RAL 7022":"Gris umbra","RAL 7023":"Gris concreto","RAL 7024":"Gris grafito","RAL 7030":"Gris piedra","RAL 7031":"Gris azul","RAL 7032":"Gris guijarro","RAL 7033":"Gris cemento","RAL 7035":"Gris claro","RAL 7036":"Gris platino","RAL 7037":"Gris polvo","RAL 7038":"Gris ágata","RAL 7039":"Gris cuarzo","RAL 7040":"Gris ventana","RAL 7042":"Gris tráfico A","RAL 7043":"Gris tráfico B","RAL 7044":"Gris seda","RAL 7045":"Gris telekom","RAL 7046":"Gris telekom 2","RAL 7047":"Gris telekom 3","RAL 8000":"Marrón verde","RAL 8001":"Marrón ocre","RAL 8002":"Marrón señal","RAL 8003":"Marrón arcilla","RAL 8004":"Marrón cobre","RAL 8007":"Marrón ciervo","RAL 8008":"Marrón oliva","RAL 8011":"Marrón nuez","RAL 8012":"Marrón rojo","RAL 8014":"Marrón sepia","RAL 8015":"Marrón castaño","RAL 8016":"Marrón caoba","RAL 8017":"Marrón chocolate","RAL 8019":"Gris marrón","RAL 8022":"Negro marrón","RAL 8023":"Marrón anaranjado","RAL 8024":"Marrón beige","RAL 8025":"Marrón pálido","RAL 8028":"Marrón tierra","RAL 9001":"Blanco crema","RAL 9002":"Blanco grisáceo","RAL 9003":"Blanco señal","RAL 9004":"Negro señal","RAL 9005":"Negro intenso","RAL 9006":"Blanco aluminio","RAL 9007":"Gris aluminio","RAL 9010":"Blanco puro","RAL 9011":"Negro grafito","RAL 9016":"Blanco tráfico","RAL 9017":"Negro tráfico","RAL 9018":"Blanco Papyrus"};
 
-// RAL color hex lookup (subset for UI display)
 const RAL_HEX = {"RAL 1000":"#BEBD7F","RAL 1001":"#C2B078","RAL 1002":"#C6A664","RAL 1003":"#E5BE01","RAL 1004":"#CDA434","RAL 1005":"#A98307","RAL 1006":"#E4A010","RAL 1007":"#DC9D00","RAL 1011":"#8A6642","RAL 1012":"#C7B446","RAL 1013":"#EAE6CA","RAL 1014":"#E1CC4F","RAL 1015":"#E6D690","RAL 1016":"#EDFF21","RAL 1017":"#F5D033","RAL 1018":"#F8F32B","RAL 1019":"#9E9764","RAL 1020":"#999950","RAL 1021":"#F3DA0B","RAL 1023":"#FAD201","RAL 1024":"#AEA04B","RAL 1027":"#9D9101","RAL 1028":"#F4A900","RAL 1032":"#D6AE01","RAL 1033":"#F3A505","RAL 1034":"#EFA94A","RAL 1037":"#F39F18","RAL 2000":"#ED760E","RAL 2001":"#C93C20","RAL 2002":"#CB2821","RAL 2003":"#FF7514","RAL 2004":"#F44611","RAL 2008":"#F75E25","RAL 2009":"#F54021","RAL 2010":"#D84B20","RAL 2011":"#EC7C26","RAL 2012":"#E55137","RAL 3000":"#AF2B1E","RAL 3001":"#A52019","RAL 3002":"#A2231D","RAL 3003":"#9B111E","RAL 3004":"#75151E","RAL 3005":"#5E2129","RAL 3007":"#412227","RAL 3009":"#642424","RAL 3011":"#781F19","RAL 3012":"#C1876B","RAL 3013":"#A12312","RAL 3014":"#D36E70","RAL 3015":"#EA899A","RAL 3016":"#B32821","RAL 3017":"#E63244","RAL 3018":"#D53032","RAL 3020":"#CC0605","RAL 3022":"#D95030","RAL 3027":"#C51D34","RAL 3028":"#CB3234","RAL 3031":"#B32428","RAL 4001":"#6D3F5B","RAL 4002":"#922B3E","RAL 4003":"#DE4C8A","RAL 4004":"#641C34","RAL 4005":"#6C4675","RAL 4006":"#A03472","RAL 4007":"#4A192C","RAL 4008":"#924E7D","RAL 4009":"#A18594","RAL 4010":"#CF3476","RAL 5000":"#354D73","RAL 5001":"#1F3438","RAL 5002":"#20214F","RAL 5003":"#1D1E33","RAL 5005":"#1E2460","RAL 5007":"#3E5F8A","RAL 5009":"#025669","RAL 5010":"#0E294B","RAL 5012":"#3B83BD","RAL 5013":"#1E213D","RAL 5014":"#606E8C","RAL 5015":"#2271B3","RAL 5017":"#063971","RAL 5018":"#3F888F","RAL 5019":"#1B5583","RAL 5020":"#1D334A","RAL 5021":"#256D7B","RAL 5022":"#252850","RAL 5023":"#49678D","RAL 5024":"#5D9B9B","RAL 6000":"#316650","RAL 6001":"#287233","RAL 6002":"#2D572C","RAL 6003":"#424632","RAL 6005":"#2F4538","RAL 6007":"#343B29","RAL 6009":"#31372B","RAL 6010":"#35682D","RAL 6011":"#587246","RAL 6013":"#6C7156","RAL 6016":"#1E5945","RAL 6017":"#4C9141","RAL 6018":"#57A639","RAL 6019":"#BDECB6","RAL 6021":"#89AC76","RAL 6024":"#308446","RAL 6025":"#3D642D","RAL 6027":"#84C3BE","RAL 6029":"#20603D","RAL 6032":"#317F43","RAL 6033":"#497E76","RAL 6034":"#7FB5B5","RAL 6037":"#008F39","RAL 7000":"#78858B","RAL 7001":"#8A9597","RAL 7002":"#7E7B52","RAL 7003":"#6C7059","RAL 7004":"#969992","RAL 7005":"#646B63","RAL 7006":"#6D6552","RAL 7009":"#4D5645","RAL 7011":"#434B4D","RAL 7012":"#4E5754","RAL 7015":"#434750","RAL 7016":"#293133","RAL 7021":"#23282B","RAL 7022":"#332F2C","RAL 7023":"#686C5E","RAL 7024":"#474A51","RAL 7030":"#8B8C7A","RAL 7031":"#474B4E","RAL 7032":"#B8B799","RAL 7033":"#7D8471","RAL 7035":"#D7D7D7","RAL 7036":"#7F7679","RAL 7037":"#7D7F7D","RAL 7038":"#B5B8B1","RAL 7039":"#6C6960","RAL 7040":"#9DA1AA","RAL 7042":"#8D948D","RAL 7043":"#4E5452","RAL 7044":"#CAC4B0","RAL 7045":"#909090","RAL 7046":"#82898F","RAL 7047":"#D0D0D0","RAL 8000":"#887142","RAL 8001":"#9C6B30","RAL 8002":"#7B5141","RAL 8003":"#80341F","RAL 8004":"#CB5D29","RAL 8007":"#8F4E35","RAL 8008":"#85490F","RAL 8011":"#6F4F28","RAL 8012":"#592321","RAL 8014":"#382C1E","RAL 8015":"#633A34","RAL 8016":"#4C2F27","RAL 8017":"#45322E","RAL 8019":"#403A3A","RAL 8022":"#212121","RAL 8023":"#A65E2E","RAL 8024":"#79553D","RAL 8025":"#755C48","RAL 8028":"#4E3B31","RAL 9001":"#FDF4E3","RAL 9002":"#E7EBDA","RAL 9003":"#F4F4F4","RAL 9004":"#282828","RAL 9005":"#0A0A0A","RAL 9006":"#A5A5A5","RAL 9007":"#8F8F8F","RAL 9010":"#FFFFFF","RAL 9011":"#1C1C1C","RAL 9016":"#F6F6F6","RAL 9017":"#1E1E1E","RAL 9018":"#D7D7D7"};
 
 function renderResults(data) {
   const pct = data.similarity_pct;
 
-  // gauge
   document.getElementById("gauge-track").style.strokeDashoffset = CIRC * (1 - pct / 100);
   document.getElementById("gauge-pct").textContent = pct.toFixed(1) + "%";
   document.getElementById("de-val").textContent    = data.delta_e.toFixed(2);
   document.getElementById("interp-text").textContent = data.interpretation;
 
-  // swatches
   document.getElementById("sc-color-a").style.background = data.hex_a;
   document.getElementById("sc-hex-a").textContent         = data.hex_a;
   document.getElementById("sc-color-b").style.background  = data.hex_b;
   document.getElementById("sc-hex-b").textContent         = data.hex_b;
 
-  // gradient bridge
   const bc  = document.getElementById("bridge-canvas");
   const brc = bc.getBoundingClientRect();
   bc.width  = Math.round(brc.width  || 600);
-  bc.height = Math.round(brc.height || 68);
+  bc.height = Math.round(brc.height || 72);
   const bCtx = bc.getContext("2d");
   const grd  = bCtx.createLinearGradient(0, 0, bc.width, 0);
   grd.addColorStop(0, data.hex_a);
@@ -1421,7 +1682,6 @@ function renderResults(data) {
   document.getElementById("bridge-label-a").textContent = data.hex_a;
   document.getElementById("bridge-label-b").textContent = data.hex_b;
 
-  // RAL ML classification
   if (data.ral_a && data.ral_b) {
     document.getElementById("ral-section").style.display = "grid";
     renderRalCard("ral-card-a", data.ral_a, "Referencia");
@@ -1430,8 +1690,8 @@ function renderResults(data) {
 }
 
 function renderRalCard(containerId, ral, side) {
-  const el   = document.getElementById(containerId);
-  const hex  = RAL_HEX[ral.predicted_code] || "#888";
+  const el  = document.getElementById(containerId);
+  const hex = RAL_HEX[ral.predicted_code] || "#888";
   const maxP = Math.max(...ral.top3.map(t => t.probability));
 
   el.innerHTML = `
@@ -1444,17 +1704,18 @@ function renderRalCard(containerId, ral, side) {
       <div class="ral-badge">${side}</div>
     </div>
     <div class="ral-top3">
-      <div class="ral-top3-label">Top 3 predicciones</div>
+      <div class="ral-top3-label">Top 3 más cercanos</div>
       ${ral.top3.map((t, i) => {
-        const h = RAL_HEX[t.code] || "#888";
-        const pct = (t.probability * 100).toFixed(1);
+        const h    = RAL_HEX[t.code] || "#888";
+        const pct  = (t.probability * 100).toFixed(1);
         const barW = ((t.probability / maxP) * 100).toFixed(1);
+        const name = RAL_NAMES[t.code] || "";
         return `
-        <div class="ral-row">
+        <div class="ral-row" style="animation-delay:${i*60}ms">
           <div class="ral-row-dot" style="background:${h}"></div>
           <div class="ral-row-code">
-            <div>${t.code}</div>
-            <div style="font-size:.62rem;color:var(--text-3);font-family:var(--sans);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px">${RAL_NAMES[t.code] || ""}</div>
+            <div class="rc-num">${t.code}</div>
+            <div class="rc-name">${name}</div>
           </div>
           <div class="ral-bar-wrap">
             <div class="ral-bar" style="width:${barW}%"></div>

@@ -88,7 +88,6 @@ def classify_color(hex_str: str) -> dict:
         }
         for code, de in top3_raw
     ]
-    top3[0]["probability"] = max(top3[0]["probability"], 0.9999)
 
     return {
         "predicted_code": distances[0][0],
